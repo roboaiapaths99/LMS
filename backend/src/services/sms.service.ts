@@ -46,13 +46,16 @@ export async function sendOTP(mobile: string, otp: string): Promise<boolean> {
     });
 
     const responseText = await response.text();
+    let jsonResponse: any = {};
+    try {
+      jsonResponse = JSON.parse(responseText);
+    } catch(e) {}
+
     console.log(`[SMS] MetaReach Status: ${response.status}. Response:`, responseText);
 
-    if (!response.ok) {
-      console.error(`[SMS Error] MetaReach API returned HTTP ${response.status}:`, responseText);
-      // We will still return true so the user isn't completely blocked from logging in during testing,
-      // but the real SMS failed.
-      return true; 
+    if (!response.ok || jsonResponse.status === 'false' || jsonResponse.status === false) {
+      console.error(`[SMS Error] MetaReach API failed. Reason: ${jsonResponse.description || responseText}`);
+      return true; // Still fallback so we don't completely lock out the system during misconfiguration
     }
 
     return true;
