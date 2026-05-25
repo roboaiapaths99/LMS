@@ -18,6 +18,8 @@ import orderRoutes from './routes/orders';
 import adminRoutes from './routes/admin';
 import sessionRoutes from './routes/sessions';
 import aiNotesRoutes from './routes/ai';
+import progressRoutes from './routes/progress';
+import bookmarkRoutes from './routes/bookmarks';
 
 const fastify = Fastify({
   logger: {
@@ -94,6 +96,8 @@ async function bootstrap() {
     fastify.register(adminRoutes, { prefix: '/api/v1' });
     fastify.register(sessionRoutes, { prefix: '/api/v1/sessions' });
     fastify.register(aiNotesRoutes, { prefix: '/api/v1' });
+    fastify.register(progressRoutes, { prefix: '/api/v1/progress' });
+    fastify.register(bookmarkRoutes, { prefix: '/api/v1/bookmarks' });
 
     // 5. Health Check
     fastify.get('/healthcheck', async (request, reply) => {
