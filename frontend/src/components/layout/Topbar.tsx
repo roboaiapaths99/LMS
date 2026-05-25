@@ -70,7 +70,8 @@ export default function Topbar() {
     let reconnectTimeout: any;
 
     function connectWS() {
-      const wsUrl = `ws://${window.location.hostname}:4000/api/v1/notifications/ws?token=${token}`;
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/api/v1/notifications/ws?token=${token}`;
       ws = new WebSocket(wsUrl);
 
       ws.onmessage = (event) => {
