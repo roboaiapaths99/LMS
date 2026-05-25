@@ -23,7 +23,7 @@ export async function sendOTP(mobile: string, otp: string): Promise<boolean> {
     }
 
     // Standard DLT matching message format for OTP verification
-    const message = `${otp} is your OTP to login at RoboAIPaths LMS. Do not share this with anyone. AGPKAC`;
+    const message = `Welcome to AGPK Academy login. Your verification code is ${otp}. This OTP will expire in 5 minutes`;
 
     console.log(`[SMS] Sending real OTP via MetaReach to ${mobile}... (OTP: ${otp})`);
 
