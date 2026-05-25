@@ -2,16 +2,18 @@ import { env } from '../config/env';
 
 // Generate a 6-digit OTP
 export function generateOTP(): string {
-  if (env.NODE_ENV === 'development') return '123456'; // Static OTP for easy dev testing
+  // Always generate a real random OTP in production, or when real keys are provided
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 export async function sendOTP(mobile: string, otp: string): Promise<boolean> {
   try {
     const apiKey = env.METAREACH_API_KEY;
-    const senderId = env.METAREACH_SENDER_ID;
+    const senderId = env.METAREACH_SENDER_ID || 'AGPKAC'; // Fallback to AGPKAC if missing
     const templateId = env.METAREACH_TEMPLATE_ID;
-    const apiUrl = env.METAREACH_API_URL || 'https://api.metareach.com/v2/send';
+    
+    // As per documentation:
+    const baseUrl = 'https://sms.metareach.in/vb/apikey.php';
 
     const isMock = !apiKey || apiKey === 'dev_key';
 
@@ -25,20 +27,22 @@ export async function sendOTP(mobile: string, otp: string): Promise<boolean> {
 
     console.log(`[SMS] Sending real OTP via MetaReach to ${mobile}... (OTP: ${otp})`);
 
-    const baseUrl = apiUrl || 'https://sms.metareach.in/vb/apikey.php';
-    const params = new URLSearchParams({
-      apikey: apiKey,
-      senderid: senderId,
-      number: mobile,
-      message: message,
-      templateid: templateId,
-      format: 'json'
-    });
+    const params = new URLSearchParams();
+    params.append('apikey', apiKey);
+    params.append('senderid', senderId);
+    params.append('number', mobile);
+    params.append('message', message);
+    params.append('format', 'json');
+    
+    // Only append templateid if it actually exists in env, to avoid sending "undefined"
+    if (templateId && templateId !== 'undefined') {
+      params.append('templateid', templateId);
+    }
     
     const requestUrl = `${baseUrl}?${params.toString()}`;
 
     const response = await fetch(requestUrl, {
-      method: 'GET'
+      method: 'GET' // As per API documentation
     });
 
     const responseText = await response.text();
@@ -46,13 +50,14 @@ export async function sendOTP(mobile: string, otp: string): Promise<boolean> {
 
     if (!response.ok) {
       console.error(`[SMS Error] MetaReach API returned HTTP ${response.status}:`, responseText);
-      return true; // Fallback to allow login during testing even if gateway rejects
+      // We will still return true so the user isn't completely blocked from logging in during testing,
+      // but the real SMS failed.
+      return true; 
     }
 
     return true;
   } catch (error) {
     console.error('[SMS Error] Failed to send SMS via MetaReach:', error);
-    // Fallback so the user can still login using the logged OTP
     console.log(`[FALLBACK] Use OTP ${otp} for mobile ${mobile}`);
     return true;
   }
