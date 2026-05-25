@@ -1,0 +1,202 @@
+--- TABLE 1 ---
+ | Platform: Web (Next.js 14) + Android (Kotlin/XML) + iOS (React Native)
+
+--- TABLE 2 ---
+ | Roles: Admin · Instructor · Student
+
+--- TABLE 3 ---
+ | Auth: Mobile OTP via SMSMeta
+
+--- TABLE 4 ---
+ | Payments: PayU Gateway (UPI / Card / Netbanking)
+
+--- TABLE 5 ---
+ | Content Protection: HLS Signed URLs · PDF Watermarking (user ID + timestamp)
+
+--- TABLE 6 ---
+ | AI Features: Video Summarizer · Topic Q&A · Notes AI · Mindmap Generator
+
+--- TABLE 7 ---
+ | Live Sessions: Instructor-led · Invite Link or Open Broadcast · Live AI Chat Summary
+
+--- TABLE 8 ---
+3.1  ADMIN  —  SUPER_ADMIN ROLE
+
+--- TABLE 9 ---
+3.2  INSTRUCTOR  —  INSTRUCTOR ROLE
+
+--- TABLE 10 ---
+3.3  STUDENT  —  STUDENT ROLE
+
+--- TABLE 11 ---
+# | FEATURE | DESCRIPTION | PRIORITY | EFFORT
+F-01 | Mobile OTP Login | User enters 10-digit mobile; SMSMeta sends 6-digit OTP; verify on submit | P0 | S
+F-02 | OTP Retry Limit | Block after 5 failed attempts; 30-min cooldown | P0 | S
+F-03 | JWT Session | HS256 JWT with role claim; 7-day refresh token in HttpOnly cookie | P0 | S
+F-04 | Role Detection | On OTP success, API returns role; frontend routes accordingly | P0 | S
+F-05 | Session Revocation | Force-logout from admin panel; Redis token blacklist | P1 | M
+
+--- TABLE 12 ---
+# | FEATURE | DESCRIPTION | PRIORITY | EFFORT
+F-10 | Course CRUD | Create / Edit / Delete courses with title, description, category, tags, thumbnail | P0 | M
+F-11 | Video Upload | MP4/HLS upload to Cloudflare R2; auto-transcode to HLS via FFmpeg worker | P0 | L
+F-12 | PDF Upload | Upload PDF; stored in R2 with ACL private; served via signed URL | P0 | M
+F-13 | Curriculum Builder | Ordered lesson list per course; drag-to-reorder; duration per lesson | P0 | M
+F-14 | Role Visibility | Per-course flag: STUDENT / INSTRUCTOR / BOTH | P0 | S
+F-15 | Bundle Builder | Create named bundle; attach course; set price; enable/disable | P0 | M
+F-16 | Coupon Codes | Alphanumeric coupon; % or flat discount; expiry date; usage limit | P1 | M
+F-17 | Publish Toggle | Draft → Published state machine | P0 | S
+
+--- TABLE 13 ---
+# | FEATURE | DESCRIPTION | PRIORITY | EFFORT
+F-20 | HLS Signed URLs | All video streams served via CloudFront signed URLs; 1-hour TTL | P0 | M
+F-21 | PDF Watermark | On-the-fly PDF watermarking: user display name + user ID + timestamp diagonal overlay using pdf-lib before download | P0 | M
+F-22 | Video Watermark | Floating semi-transparent user-ID overlay rendered client-side in HLS.js player; cannot be removed by screenshot | P0 | M
+F-23 | DRM Token Check | Every HLS segment request verified against Redis access token | P1 | L
+F-24 | Download Block | Right-click / devtools download blocked via JS; HLS encryption (AES-128) for segments | P1 | M
+
+--- TABLE 14 ---
+# | FEATURE | DESCRIPTION | PRIORITY | EFFORT
+F-30 | PayU Checkout | Generate PayU hash server-side; redirect to PayU hosted page; support UPI/card/netbanking | P0 | M
+F-31 | Webhook Handler | POST /api/v1/webhooks/payu; verify HMAC; create order record; auto-grant access | P0 | M
+F-32 | Access Grant | On webhook success: insert user_course_access row; return 200 to PayU | P0 | S
+F-33 | Order History | User-facing list of orders with status, date, amount, invoice download | P1 | M
+F-34 | Refund API | Admin-initiated refund via PayU refund API; update order status | P1 | M
+F-35 | Invoice PDF | Auto-generated invoice PDF with course, amount, date, user details | P1 | M
+
+--- TABLE 15 ---
+# | FEATURE | DESCRIPTION | PRIORITY | EFFORT
+F-40 | Device Fingerprint | On login: collect device_id (UUID stored in device storage); send to API | P0 | M
+F-41 | Binding Limit | Each user account tied to 1 active device_id; stored in DB | P0 | S
+F-42 | New Device Request | If device_id mismatch: user submits binding request with device info | P0 | S
+F-43 | Admin Queue | Admin panel shows pending requests with user, device, timestamp | P0 | S
+F-44 | Approve / Reject | Admin approves: new device_id set as active; push notification to user | P0 | S
+F-45 | Force Logout | Admin can revoke old device: JWT blacklisted in Redis | P1 | S
+F-46 | Audit Log | Every binding change logged: who, when, old device, new device | P1 | S
+
+--- TABLE 16 ---
+# | FEATURE | DESCRIPTION | PRIORITY | EFFORT
+F-50 | Session Create | Instructor creates session: title, date, description, type (INVITE / OPEN) | P0 | L
+F-51 | Invite-Link Mode | Generate unique short link; only users with link can join | P0 | M
+F-52 | Open Broadcast Mode | All enrolled students in the course can join; listed on their dashboard | P0 | M
+F-53 | WebRTC Streaming | Instructor streams via browser WebRTC; students watch via HLS relay (mediasoup or LiveKit) | P0 | XL
+F-54 | Live Chat | Real-time WebSocket chat during session; messages stored per session | P0 | L
+F-55 | AI Chat Summary | At session end (or on demand): Claude/OpenAI summarises entire chat transcript into key points | P1 | M
+F-56 | Session Recording | Auto-record to R2; available to enrolled users post-session | P1 | L
+F-57 | Hand Raise / Q&A | Students can raise hand; instructor sees queue | P2 | M
+
+--- TABLE 17 ---
+# | FEATURE | DESCRIPTION | PRIORITY | EFFORT
+F-60 | Video Summariser | After video is watched (or on demand), AI generates chapter-by-chapter summary using transcript (Whisper/AssemblyAI) + LLM | P1 | L
+F-61 | Topic Q&A | User types a topic or question; AI answers using course transcript as context (RAG pipeline) | P1 | L
+F-62 | AI Notes Polish | User writes raw notes; AI reformats into structured, decorated, readable notes with headings and highlights | P1 | M
+F-63 | AI Mindmap | From notes or video summary, AI generates a JSON mindmap tree; rendered as interactive SVG in app | P1 | L
+F-64 | AI Blockflow | From topic or notes, AI generates a step-by-step block diagram (JSON); rendered in notes canvas | P2 | L
+F-65 | Live Session Summary | AI summarises live chat + transcript at end of each session | P1 | M
+
+--- TABLE 18 ---
+# | FEATURE | DESCRIPTION | PRIORITY | EFFORT
+F-70 | Rich Text Notes | Block-based editor (Tiptap/ProseMirror); bold, italic, heading, code, lists | P1 | L
+F-71 | Note Organisation | Notes linked to course and lesson; user can also create standalone notes | P1 | M
+F-72 | Mindmap Viewer | Interactive SVG mindmap from AI-generated JSON; zoom, pan, expand nodes | P1 | L
+F-73 | Blockflow Canvas | Drag-and-drop block diagram canvas; nodes exported as PNG | P2 | XL
+F-74 | AI Polish Button | One-click AI formatting of selected notes | P1 | M
+F-75 | Export Notes | Export note as PDF or markdown file | P2 | M
+F-76 | Sync Across Devices | Notes stored server-side; available on web and mobile | P1 | M
+
+--- TABLE 19 ---
+METHOD | ENDPOINT | DESCRIPTION | AUTH
+POST | /auth/otp/request | Request OTP for a mobile number | Public
+POST | /auth/otp/verify | Verify OTP, receive JWT + refresh token | Public
+POST | /auth/token/refresh | Refresh JWT using HttpOnly refresh token | Public
+POST | /auth/logout | Revoke session (blacklist JWT in Redis) | User JWT
+GET | /auth/me | Get current user profile + role | User JWT
+
+--- TABLE 20 ---
+METHOD | ENDPOINT | DESCRIPTION | AUTH
+GET | /courses | List courses (filtered by role from JWT) | User JWT
+GET | /courses/:id | Course detail, curriculum, pricing | User JWT
+POST | /courses | Create course (admin only) | Admin JWT
+PUT | /courses/:id | Update course | Admin JWT
+DELETE | /courses/:id | Soft-delete course | Admin JWT
+POST | /courses/:id/videos | Upload video lesson (multipart) | Admin JWT
+POST | /courses/:id/pdfs | Upload PDF attachment | Admin JWT
+GET | /courses/:id/stream/:lessonId | Get signed HLS URL (checks access) | User JWT
+GET | /courses/:id/pdf/:lessonId | Get watermarked PDF (checks access) | User JWT
+
+--- TABLE 21 ---
+METHOD | ENDPOINT | DESCRIPTION | AUTH
+GET | /bundles/:courseId | List bundles for a course | User JWT
+POST | /bundles | Create bundle (admin) | Admin JWT
+POST | /orders/initiate | Create PayU hash, return payment params | User JWT
+POST | /webhooks/payu | PayU payment notification (HMAC verified) | Public+HMAC
+GET | /orders | List user orders | User JWT
+GET | /orders/:id/invoice | Download invoice PDF | User JWT
+POST | /orders/:id/refund | Initiate refund (admin) | Admin JWT
+
+--- TABLE 22 ---
+METHOD | ENDPOINT | DESCRIPTION | AUTH
+POST | /devices/check | Check if device_id is bound to account | User JWT
+POST | /devices/request | Submit new device binding request | User JWT
+GET | /admin/devices/requests | List all pending requests | Admin JWT
+PUT | /admin/devices/:id/approve | Approve binding; update active device | Admin JWT
+PUT | /admin/devices/:id/reject | Reject with optional reason | Admin JWT
+POST | /admin/devices/:userId/forcelogout | Revoke all tokens for user | Admin JWT
+
+--- TABLE 23 ---
+METHOD | ENDPOINT | DESCRIPTION | AUTH
+POST | /sessions | Create live session (instructor/admin) | Instructor JWT
+GET | /sessions | List upcoming/active sessions for user | User JWT
+GET | /sessions/:id | Session detail + join token | User JWT
+POST | /sessions/:id/start | Start session; create LiveKit room | Instructor JWT
+POST | /sessions/:id/end | End session; trigger AI summary job | Instructor JWT
+GET | /sessions/:id/summary | Get AI-generated post-session summary | User JWT
+WS | /sessions/:id/chat | WebSocket live chat channel | User JWT
+
+--- TABLE 24 ---
+METHOD | ENDPOINT | DESCRIPTION | AUTH
+POST | /ai/summarise/:lessonId | Generate video summary (queued job) | User JWT
+POST | /ai/ask | RAG Q&A: {courseId, question} | User JWT
+POST | /ai/polish-notes | AI-format raw notes text | User JWT
+POST | /ai/mindmap | Generate mindmap JSON from text | User JWT
+GET | /notes | List user notes | User JWT
+POST | /notes | Create note {courseId?, lessonId?, title, content} | User JWT
+PUT | /notes/:id | Update note | User JWT
+DELETE | /notes/:id | Delete note | User JWT
+GET | /notes/:id/export | Export note as PDF or MD | User JWT
+
+--- TABLE 25 ---
+LAYER | TECHNOLOGY | PURPOSE
+Web Frontend | Next.js 14 (App Router) | SSR, ISR, role-based routing
+Mobile — Android | Kotlin + XML + Jetpack | Native Android, ExoPlayer, Hilt
+Mobile — iOS | React Native (Expo) | Cross-platform iOS client
+API Server | Node.js + Fastify | REST API, JWT, WebSocket
+ORM | Prisma | Type-safe DB access
+Primary DB | PostgreSQL 15 | Users, courses, orders, access
+Cache / Sessions | Redis | OTP TTL, JWT blacklist, rate-limit
+File Storage | Cloudflare R2 or any free service | Videos, PDFs, thumbnails
+Video CDN | CloudFront + HLS free service | Signed URL streaming, AES-128
+Video Transcode | FFmpeg + BullMQ | MP4 → HLS worker queue
+Live Video | LiveKit Cloud or any free service | WebRTC + SFU relay
+Payments | PayU | Checkout, webhooks, refunds
+OTP SMS | SMSMeta | Mobile OTP delivery
+AI / LLM | Claude (Anthropic) API | Summary, Q&A, notes, mindmap
+Transcription | AssemblyAI / Whisper free service | Video-to-text for AI features
+PDF Watermark | pdf-lib (Node.js) | Server-side watermarking
+Job Queue | BullMQ + Redis | Async: transcode, AI jobs, emails
+Email | AWS SESany other free s3rvice | Receipts, device alerts
+Monitoring | Prometheus + Grafana any free service | Metrics, alerts, uptime
+Infra | Vps hosting hostinger deployment | Auto-scaling, zero-downtime deploy
+CI/CD | GitHub Actions | Tests, staging, production releases
+
+--- TABLE 26 ---
+# | QUESTION | DECISION NEEDED
+Q1 | AI provider | Anthropic Claude API (recommended) or OpenAI GPT
+Q2 | LiveKit vs Agora | LiveKit Cloud (open-source, predictable pricing) vs Agora (per-minute billing) noidea what is this use free mode
+Q3 | Video offline for V1 | Should offline download for Android be in V1 or V2?
+Q4 | Instructor video upload | Instructors can  upload their own course content or is that admin-only?
+Q5 | Notes API | Use Tiptap cloud sync API or self-host note sync on own DB? If not any free option
+Q6 | PDF DRM | we need full DRM (e.g., PDF encryption)?
+Q7 | PayU test mode | Do you have PayU test credentials ready for Postman testing? Yes i have this
+Q8 | SMSMeta sandbox | Is there a sandbox mode for SMSMeta to avoid real SMS charges in dev? Yes i have this
+
