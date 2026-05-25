@@ -257,5 +257,5 @@ export default async function adminRoutes(fastify: FastifyInstance) {
 
       return reply.status(201).send({ message: `Notification successfully sent to ${usersToNotify.length} users` });
     });
-  });
+  }, { prefix: '/admin' });
 }
