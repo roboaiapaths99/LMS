@@ -32,7 +32,7 @@ export default function AdminCourseDetailPage() {
   const id = params.id as string;
 
   const [course, setCourse] = useState<CourseData | null>(null);
-  const [form, setForm] = useState({ title: '', description: '', category: '', visibility: 'STUDENT', isFeatured: false });
+  const [form, setForm] = useState({ title: '', description: '', category: '', visibility: 'STUDENT', isFeatured: false, status: 'DRAFT' });
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -63,6 +63,7 @@ export default function AdminCourseDetailPage() {
         category: c.category || '',
         visibility: c.visibility || 'STUDENT',
         isFeatured: !!c.isFeatured,
+        status: c.status || 'DRAFT',
       });
       const rawLessons = data.lessons || c.lessons || [];
       const mappedLessons = rawLessons.map((l: any) => ({
@@ -268,6 +269,13 @@ export default function AdminCourseDetailPage() {
                 <option value="STUDENT">Student Only</option>
                 <option value="INSTRUCTOR">Instructor Only</option>
                 <option value="BOTH">Both Roles</option>
+              </select>
+            </div>
+            <div className="input-group mb-md" style={{ flex: '1 1 250px' }}>
+              <label htmlFor="status">Course Status</label>
+              <select id="status" name="status" className="input" value={form.status} onChange={handleChange}>
+                <option value="DRAFT">DRAFT (Hidden from Students)</option>
+                <option value="PUBLISHED">PUBLISHED (Visible to Students)</option>
               </select>
             </div>
           </div>
