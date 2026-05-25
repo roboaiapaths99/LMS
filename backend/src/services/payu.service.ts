@@ -79,7 +79,7 @@ export async function processRefund(txnid: string, amount: number) {
     body: params.toString()
   });
 
-  const data = await response.json();
+  const data = (await response.json()) as any;
   if (data.status !== 1) {
     throw new Error(data.msg || 'PayU refund failed');
   }
