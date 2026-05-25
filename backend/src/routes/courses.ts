@@ -135,7 +135,7 @@ export default async function courseRoutes(fastify: FastifyInstance) {
     return reply.send({ course, lessons });
   });
 
-  // User: Stream video lesson
+  // User: Stream video lesson (supports HTTP Range for progressive playback)
   fastify.get('/:id/stream/:lessonId', { preHandler: [authenticate] }, async (request, reply) => {
     const { id, lessonId } = request.params as any;
     
@@ -164,14 +164,44 @@ export default async function courseRoutes(fastify: FastifyInstance) {
       }
     }
 
-    // In a real app we would stream HLS. Here we just serve the MP4 via read stream
+    const fs = require('fs');
     const fullPath = path.resolve(process.cwd(), lesson.storagePath.replace(/^\//, ''));
-    if (!require('fs').existsSync(fullPath)) {
+    if (!fs.existsSync(fullPath)) {
        return reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'File missing on server' });
     }
 
-    reply.header('Content-Type', 'video/mp4');
-    return reply.send(require('fs').createReadStream(fullPath));
+    const stat = fs.statSync(fullPath);
+    const fileSize = stat.size;
+    const range = request.headers.range;
+
+    if (range) {
+      // Parse Range header e.g. "bytes=0-999999"
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunkSize = end - start + 1;
+
+      reply.raw.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize,
+        'Content-Type': 'video/mp4',
+      });
+
+      const stream = fs.createReadStream(fullPath, { start, end });
+      stream.pipe(reply.raw);
+    } else {
+      // No Range header — send full file with Content-Length so browser knows the size
+      reply.raw.writeHead(200, {
+        'Content-Length': fileSize,
+        'Content-Type': 'video/mp4',
+        'Accept-Ranges': 'bytes',
+      });
+
+      fs.createReadStream(fullPath).pipe(reply.raw);
+    }
+
+    return reply;
   });
 
   // User: View PDF lesson

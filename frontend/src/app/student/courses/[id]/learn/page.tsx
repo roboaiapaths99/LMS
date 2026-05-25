@@ -118,42 +118,14 @@ export default function CourseLearn({ params }: { params: Promise<{ id: string }
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/courses/${courseId}/stream/${lessonId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) throw new Error('Stream request failed');
-
-      // Download chunk reader to show progress bar
-      const contentLength = response.headers.get('content-length');
-      const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
-      let loadedBytes = 0;
-
-      const reader = response.body?.getReader();
-      const chunks: Uint8Array[] = [];
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(value);
-          loadedBytes += value.length;
-          if (totalBytes > 0) {
-            setDownloadProgress(Math.round((loadedBytes / totalBytes) * 100));
-          }
-        }
-      }
-
-      const blob = new Blob(chunks as any, { type: 'video/mp4' });
-      const blobUrl = URL.createObjectURL(blob);
-      setVideoSrc(blobUrl);
+      const streamUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/courses/${courseId}/stream/${lessonId}?token=${encodeURIComponent(token || '')}`;
+      
+      setVideoSrc(streamUrl);
 
       // Start saving progress once loaded
       setupProgressTracker(lessonId);
     } catch (err: any) {
-      toast.error('Failed to load protected HLS video stream');
+      toast.error('Failed to load video stream');
     } finally {
       setVideoLoading(false);
     }

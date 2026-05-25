@@ -10,12 +10,22 @@ declare module 'fastify' {
 
 export async function authenticate(request: FastifyRequest, reply: FastifyReply) {
   try {
+    let token: string | undefined;
+
+    // 1. Check Authorization header first
     const authHeader = request.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'Missing or invalid token' });
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
     }
 
-    const token = authHeader.split(' ')[1];
+    // 2. Fallback: check query param (used by native video/audio elements for streaming)
+    if (!token) {
+      token = (request.query as any)?.token;
+    }
+
+    if (!token) {
+      return reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'Missing or invalid token' });
+    }
     
     // Check if token is blacklisted in Redis (for logout)
     try {
