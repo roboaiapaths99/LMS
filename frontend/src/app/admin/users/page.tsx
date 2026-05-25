@@ -42,7 +42,7 @@ export default function AdminUsersPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/users', {
+      const { data } = await api.get('/admin/users', {
         params: {
           search: search || undefined,
           role: role || undefined,
@@ -68,7 +68,7 @@ export default function AdminUsersPage() {
   const handleToggleStatus = async (user: User) => {
     try {
       const newStatus = !user.isActive;
-      await api.put(`/users/${user.id || user._id}/status`, { isActive: newStatus });
+      await api.put(`/admin/users/${user.id || user._id}/status`, { isActive: newStatus });
       toast.success(`User ${newStatus ? 'activated' : 'deactivated'} successfully`);
       setUsers(prev => prev.map(u => (u._id === user._id || u.id === user.id ? { ...u, isActive: newStatus } : u)));
     } catch (err: any) {

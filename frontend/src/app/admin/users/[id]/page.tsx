@@ -64,7 +64,7 @@ export default function AdminUserDetailPage() {
   const fetchUserDetails = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get(`/users/${id}`);
+      const { data } = await api.get(`/admin/users/${id}`);
       setUser(data.user);
       setOrders(data.orders || []);
       setDevices(data.devices || []);
@@ -79,7 +79,7 @@ export default function AdminUserDetailPage() {
   const handleRoleChange = async (newRole: 'ADMIN' | 'INSTRUCTOR' | 'STUDENT') => {
     setUpdatingRole(true);
     try {
-      await api.put(`/users/${id}/role`, { role: newRole });
+      await api.put(`/admin/users/${id}/role`, { role: newRole });
       toast.success('User role updated successfully');
       setUser(prev => (prev ? { ...prev, role: newRole } : null));
     } catch (err: any) {
@@ -93,7 +93,7 @@ export default function AdminUserDetailPage() {
     if (!user) return;
     try {
       const newStatus = !user.isActive;
-      await api.put(`/users/${id}/status`, { isActive: newStatus });
+      await api.put(`/admin/users/${id}/status`, { isActive: newStatus });
       toast.success(`User ${newStatus ? 'activated' : 'deactivated'} successfully`);
       setUser(prev => (prev ? { ...prev, isActive: newStatus } : null));
     } catch (err: any) {
@@ -104,7 +104,7 @@ export default function AdminUserDetailPage() {
   const handleResetOtp = async () => {
     setResettingOtp(true);
     try {
-      await api.put(`/users/${id}/reset-otp`);
+      await api.put(`/admin/users/${id}/reset-otp`);
       toast.success('OTP attempts and block reset successfully');
     } catch (err: any) {
       toast.error('Failed to reset OTP limits');
